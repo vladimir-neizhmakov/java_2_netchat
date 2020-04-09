@@ -26,19 +26,21 @@ public class Lesson_2 {
         float val=0f;
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
-                val += Integer.parseInt(arr[i][j]);
+                try {
+                    val += Integer.parseInt(arr[i][j]);
+                } catch (NumberFormatException e) {throw new NaN();}
+
             }
         }
         return (val)/2;
     }
 
+
     public static void main(String[] args) {
         try {
             System.out.println(CalcStr(StringToArr(str)));
-        } catch (ArrayIndexOutOfBoundsException e1) {
-            e1.printStackTrace();
-        } catch (NumberFormatException e2){
-            e2.printStackTrace();
+        } catch (ArrayIndexOutOfBoundsException | NumberFormatException e) {
+            e.printStackTrace();
         }
 
     }
