@@ -43,10 +43,8 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
     }
     //Чтение лога из файла
     private String ReadFromFile(String fileName) throws IOException {
-        InputStreamReader ps = new InputStreamReader(new BufferedInputStream(new FileInputStream(fileName)),"UTF-8");
-        String str="";
-        int b;
-        while ((b = ps.read()) != -1) str=str+((char) b);
+        FileInputStream ps = new FileInputStream(fileName);
+        String str= new String(ps.readAllBytes());
         ps.close();
         return str;
     }
@@ -131,7 +129,5 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
                 t.getName(), e.getClass().getCanonicalName(), e.getMessage(), ste[0]);
         JOptionPane.showMessageDialog(this, msg, "Exception", JOptionPane.ERROR_MESSAGE);
         System.exit(1);
-
-
     }
 }
