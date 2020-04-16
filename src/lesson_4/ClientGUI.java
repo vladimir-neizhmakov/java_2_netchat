@@ -4,6 +4,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.*;
+import java.sql.Date;
+import java.util.stream.Stream;
 
 public class ClientGUI extends JFrame implements ActionListener, Thread.UncaughtExceptionHandler {
 
@@ -31,6 +34,23 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
 
     private final JList<String> userList = new JList<>();
 
+    //Запись лога в файл
+    private void WriteToFile(String fileName, String text) throws IOException {
+        PrintStream ps = new PrintStream(new FileOutputStream(fileName,true));
+        ps.println(text);
+        ps.flush();
+        ps.close();
+    }
+    //Чтение лога из файла
+    private String ReadFromFile(String fileName) throws IOException {
+        InputStreamReader ps = new InputStreamReader(new BufferedInputStream(new FileInputStream(fileName)),"UTF-8");
+        String str="";
+        int b;
+        while ((b = ps.read()) != -1) str=str+((char) b);
+        ps.close();
+        return str;
+    }
+
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
@@ -55,8 +75,17 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         log.setLineWrap(true);
         log.setWrapStyleWord(true);
         log.setEditable(false);
-        cbAlwaysOnTop.addActionListener(this);
+        //Читаем лог
+        try{log.append(ReadFromFile("log.txt"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
+        cbAlwaysOnTop.addActionListener(this);
+        //Добавляем обработчик текстового ввод
+        tfMessage.addActionListener(this);
+        //Добавляем обработчик кнопки отправить
+        btnSend.addActionListener(this);
         panelTop.add(tfIPAddress);
         panelTop.add(tfPort);
         panelTop.add(cbAlwaysOnTop);
@@ -79,7 +108,16 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         Object src = e.getSource();
         if (src == cbAlwaysOnTop) {
             setAlwaysOnTop(cbAlwaysOnTop.isSelected());
-        } else {
+        }  else if ((src == tfMessage) || (src == btnSend)) { //Обрабатывам нажатие кнопки отправить и enter
+            String chatText = "Дата " + tfLogin.getText()+": "+tfMessage.getText()+"\n";
+            log.append(chatText);
+            tfMessage.setText("");
+            try{
+                WriteToFile("log.txt",chatText);
+            }  catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }  else {
             throw new RuntimeException("Unknown source:" + src);
         }
     }
@@ -93,5 +131,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
                 t.getName(), e.getClass().getCanonicalName(), e.getMessage(), ste[0]);
         JOptionPane.showMessageDialog(this, msg, "Exception", JOptionPane.ERROR_MESSAGE);
         System.exit(1);
+
+
     }
 }
